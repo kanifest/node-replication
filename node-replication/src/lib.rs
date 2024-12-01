@@ -6,18 +6,17 @@
 //!
 //! You'll probably want to start navigating the documentation by first looking
 //! at the [`nr`] module and [`cnr`] afterwards.
-
 #![no_std]
 #![feature(
     new_uninit,
     get_mut_unchecked,
     negative_impls,
     allocator_api,
-    box_syntax,
     generic_associated_types,
     nonnull_slice_from_raw_parts,
     doc_auto_cfg,
-    core_intrinsics
+    core_intrinsics,
+    new_zeroed_alloc
 )]
 #[cfg(test)]
 extern crate std;
