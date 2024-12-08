@@ -1,10 +1,3 @@
-// Copyright © 2019-2022 VMware, Inc. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0 OR MIT
-
-//! Context where threads "buffer" operations until they are completed.
-//!
-//! This allows the combiner to find and flat-combine operations.
-
 use core::cell::{Cell, UnsafeCell};
 use core::default::Default;
 use core::iter::{ExactSizeIterator, Iterator};
@@ -63,7 +56,7 @@ where
 ///
 /// - `M` is the type of meta-data that is associated with each operation.
 #[repr(align(64))]
-pub(crate) struct Context<T, R, M>
+pub struct Context<T, R, M>
 where
     T: Sized + Clone,
     R: Sized + Clone,
@@ -140,7 +133,7 @@ where
     /// Returns true if the operation was successfully enqueued. False
     /// otherwise.
     #[inline(always)]
-    pub(crate) fn enqueue(&self, op: T, meta: M) -> bool {
+    pub fn enqueue(&self, op: T, meta: M) -> bool {
         let t = self.tail.load(Ordering::Acquire);
         let h = self.head.load(Ordering::Relaxed);
 
@@ -168,7 +161,7 @@ where
     /// replica this thread is registered against.
     #[allow(dead_code)]
     #[inline(always)]
-    pub(crate) fn enqueue_resps(&self, responses: &[R]) {
+    pub fn enqueue_resps(&self, responses: &[R]) {
         let n = responses.len();
 
         // Empty slice passed in; no work to do, so simply return.
@@ -187,7 +180,7 @@ where
     /// after it has executed operations (obtained through a call to ops()) against the
     /// replica this thread is registered against.
     #[inline(always)]
-    pub(crate) fn enqueue_resp(&self, response: R) {
+    pub fn enqueue_resp(&self, response: R) {
         let h = self.comb.load(Ordering::Relaxed);
         self.batch[self.index(h)].resp.replace(Some(response));
         self.comb.store(h + 1, Ordering::Relaxed);
@@ -195,7 +188,7 @@ where
 
     /// Returns a single response if available. Otherwise, returns None.
     #[inline(always)]
-    pub(crate) fn res(&self) -> Option<R> {
+    pub fn res(&self) -> Option<R> {
         let s = self.head.load(Ordering::Relaxed);
         let f = self.comb.load(Ordering::Relaxed);
 
@@ -235,13 +228,13 @@ where
 
     /// Returns the maximum number of operations that will go pending on this context.
     #[inline(always)]
-    pub(crate) fn batch_size() -> usize {
+    pub fn batch_size() -> usize {
         MAX_PENDING_OPS
     }
 
     /// Given a logical address, returns an index into the batch at which it falls.
     #[inline(always)]
-    pub(crate) fn index(&self, logical: usize) -> usize {
+    pub fn index(&self, logical: usize) -> usize {
         logical & (MAX_PENDING_OPS - 1)
     }
 }

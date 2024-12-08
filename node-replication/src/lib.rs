@@ -8,7 +8,6 @@
 //! at the [`nr`] module and [`cnr`] afterwards.
 #![no_std]
 #![feature(
-    new_uninit,
     get_mut_unchecked,
     negative_impls,
     allocator_api,
@@ -29,7 +28,7 @@ extern crate crossbeam_utils;
 #[macro_use]
 extern crate logging;
 
-pub(crate) mod context;
+pub mod context;
 pub mod log;
 pub mod replica;
 
