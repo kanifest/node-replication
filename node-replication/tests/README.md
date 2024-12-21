@@ -12,6 +12,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 sudo apt update
 sudo apt install clang libclang-dev
 sudo apt install cmake
+sudo apt-get install liburcu-dev
 
 # Install Kani
 cargo install kani-verifier
@@ -31,4 +32,11 @@ To run all verification tests:
 ```bash
 cd node-replication/node-replication
 cargo kani --tests
+```
+
+To run just one:
+```
+cargo kani --tests --harness <harness_name>
+# For example
+cargo kani --tests --harness verify_token_copy
 ```
