@@ -21,8 +21,8 @@ impl Dispatch for TestOp {
 
     fn dispatch<'a>(&self, _op: Self::ReadOperation<'a>) -> Self::Response {
         match self {
-            TestOp::Write(_) => None,
-            TestOp::Read => Some(0),
+            TestOp::Write(value) => Some(*value),
+            TestOp::Read => Some(0), // Modify this logic if needed
         }
     }
 
@@ -60,4 +60,7 @@ fn verify_basic_operation() {
     let mut test_op = TestOp::Write(0);
     let write_result = test_op.dispatch_mut(WriteOp(value));
     assert!(write_result.is_some());
+
+    let read_result = test_op.dispatch(ReadOp);
+    assert_eq!(read_result.unwrap(), value);
 }
