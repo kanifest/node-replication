@@ -40,3 +40,8 @@ cargo kani --tests --harness <harness_name>
 # For example
 cargo kani --tests --harness verify_token_copy
 ```
+
+To run simulations (not verifications):
+```
+cargo test --test test
+```
