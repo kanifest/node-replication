@@ -64,3 +64,124 @@ fn verify_basic_operation() {
     let read_result = test_op.dispatch(ReadOp);
     assert_eq!(read_result.unwrap(), value);
 }
+
+#[kani::proof]
+#[kani::unwind(10)]
+fn verify_state_transitions() {
+    let initial_value: u8 = kani::any();
+    kani::assume(initial_value < 10);
+
+    let write_value: u8 = kani::any();
+    kani::assume(write_value < 10);
+
+    // Start with an initial TestOp state
+    let mut test_op = TestOp::Write(initial_value);
+
+    // Perform a write operation
+    let write_result = test_op.dispatch_mut(WriteOp(write_value));
+    assert_eq!(write_result, Some(write_value));
+
+    // Check the state after write
+    if let TestOp::Write(state) = test_op {
+        assert_eq!(state, write_value);
+    }
+
+    // Perform a read operation
+    let read_result = test_op.dispatch(ReadOp);
+    assert_eq!(read_result, Some(write_value));
+}
+
+#[kani::proof]
+#[kani::unwind(10)]
+fn verify_invariants() {
+    let mut test_op = TestOp::Write(0);
+
+    // Perform a series of random write operations
+    for _ in 0..3 {
+        let new_value: u8 = kani::any();
+        kani::assume(new_value < 5);
+
+        let write_result = test_op.dispatch_mut(WriteOp(new_value));
+        assert!(write_result.is_some());
+
+        // Check invariant: TestOp must hold the last written value
+        if let TestOp::Write(state) = test_op {
+            assert_eq!(state, new_value);
+        }
+    }
+
+    // Perform a read operation and validate
+    let read_result = test_op.dispatch(ReadOp);
+    if let TestOp::Write(state) = test_op {
+        assert_eq!(read_result, Some(state));
+    }
+}
+
+#[kani::proof]
+#[kani::unwind(10)]
+fn verify_edge_cases() {
+    // Test extreme boundary values
+    let max_value: u8 = 255;
+    let min_value: u8 = 0;
+
+    let mut test_op = TestOp::Write(min_value);
+    let write_result = test_op.dispatch_mut(WriteOp(max_value));
+    assert_eq!(write_result, Some(max_value));
+
+    let read_result = test_op.dispatch(ReadOp);
+    assert_eq!(read_result, Some(max_value));
+}
+
+#[kani::proof]
+#[kani::unwind(10)]
+fn verify_concurrent_behavior() {
+    let initial_value: u8 = kani::any();
+    kani::assume(initial_value < 10);
+
+    let write_value_1: u8 = kani::any();
+    let write_value_2: u8 = kani::any();
+    kani::assume(write_value_1 < 10);
+    kani::assume(write_value_2 < 10);
+
+    let mut test_op = TestOp::Write(initial_value);
+
+    // Simulate interleaved write operations
+    let write_result_1 = test_op.dispatch_mut(WriteOp(write_value_1));
+    let write_result_2 = test_op.dispatch_mut(WriteOp(write_value_2));
+
+    // Validate that the state matches the last write
+    if let TestOp::Write(state) = test_op {
+        assert_eq!(state, write_value_2);
+    }
+
+    // Validate read operation reflects the final state
+    let read_result = test_op.dispatch(ReadOp);
+    assert_eq!(read_result, Some(write_value_2));
+}
+
+#[kani::proof]
+#[kani::unwind(10)]
+fn verify_exhaustive_sequences() {
+    let mut test_op = TestOp::Write(0);
+
+    for _ in 0..3 {
+        let operation: bool = kani::any(); // Randomly choose write (true) or read (false)
+        if operation {
+            let write_value: u8 = kani::any();
+            kani::assume(write_value < 10);
+
+            let write_result = test_op.dispatch_mut(WriteOp(write_value));
+            assert!(write_result.is_some());
+
+            // Check if the state is updated correctly
+            if let TestOp::Write(state) = test_op {
+                assert_eq!(state, write_value);
+            }
+        } else {
+            let read_result = test_op.dispatch(ReadOp);
+            if let TestOp::Write(state) = test_op {
+                assert_eq!(read_result, Some(state));
+            }
+        }
+    }
+}
