@@ -1,0 +1,13 @@
+
+running 8 tests
+test tests::test_constants_validity ... ok
+test tests::test_basic_token ... ok
+test tests::test_batch_response_ordering ... ok
+test tests::test_context_basic_ops ... ok
+test tests::test_context_capacity ... ok
+test tests::test_response_ordering_single ... ok
+test tests::test_log_basic_registration ... ok
+test tests::test_concurrent_basic_registration ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
